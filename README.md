@@ -51,19 +51,26 @@ from `config.json` with `env.YOUR_KEY_NAME`.
 
 ## Auth
 
-Authentication is on from the first boot, and it covers inference as well as the
-dashboard (`client.enforce_auth_on_inference`). Callers reach `/v1/*` with a virtual
-key, or with the admin credentials over HTTP Basic:
+Authentication is on from the first boot and covers two separate surfaces:
+
+- **Dashboard and management API** — the admin username and password. An
+  unauthenticated `GET /api/providers` answers `401`.
+- **Inference (`/v1/*`)** — a virtual key, because `client.enforce_auth_on_inference`
+  is `true`. Admin credentials deliberately do **not** work here; an unauthenticated
+  call answers `401 virtual_key_required`.
+
+So the first thing to do after deploying is issue a virtual key under
+**Governance → Virtual Keys**, then send it as `x-bf-vk`:
 
 ```bash
 curl -X POST https://<your-domain>/v1/chat/completions \
-  -u "$BIFROST_ADMIN_USERNAME:$BIFROST_ADMIN_PASSWORD" \
+  -H "x-bf-vk: $YOUR_VIRTUAL_KEY" \
   -H 'Content-Type: application/json' \
   -d '{"model":"openai/gpt-4o-mini","messages":[{"role":"user","content":"hi"}]}'
 ```
 
-Issue scoped virtual keys from **Governance → Virtual Keys** for anything that is not
-you.
+Give each key a budget and a rate limit while you are there — they are the only thing
+standing between a leaked key and your provider bill.
 
 ## Licence
 
