@@ -13,9 +13,18 @@ PG_DB=bifrost
 # APP_DIR is a declared VOLUME, so a mounted volume would hide a copy baked into the
 # image at build time. Writing it at boot keeps the file correct either way.
 # ---------------------------------------------------------------------------
+#
+# CORS defaults to this deployment's own public URL rather than "*", so a browser on
+# some other origin cannot spend the operator's provider credits with a leaked virtual
+# key. Set BIFROST_ALLOWED_ORIGINS (comma-separated) to widen it.
+ALLOWED_ORIGINS="${BIFROST_ALLOWED_ORIGINS:-${BIFROST_EXTERNAL_URL:-*}}"
+ALLOWED_ORIGINS_JSON=$(printf '%s' "$ALLOWED_ORIGINS" | sed 's/,/","/g')
+
 mkdir -p "$APP_DIR"
-sed "s|__PG_SSL_MODE__|${PG_SSL_MODE}|g" /app/config.json > "$APP_DIR/config.json"
-echo "boot: wrote $APP_DIR/config.json (pg ssl_mode=${PG_SSL_MODE})"
+sed -e "s|__PG_SSL_MODE__|${PG_SSL_MODE}|g" \
+    -e "s|__ALLOWED_ORIGINS__|${ALLOWED_ORIGINS_JSON}|g" \
+    /app/config.json > "$APP_DIR/config.json"
+echo "boot: wrote $APP_DIR/config.json (pg ssl_mode=${PG_SSL_MODE}, allowed_origins=${ALLOWED_ORIGINS})"
 
 # ---------------------------------------------------------------------------
 # 2. Size the Go heap from the cgroup.

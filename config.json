@@ -7,7 +7,8 @@
     "enable_logging": true,
     "enforce_auth_on_inference": true,
     "log_retention_days": 90,
-    "mcp_external_client_url": "env.BIFROST_EXTERNAL_URL"
+    "mcp_external_client_url": "env.BIFROST_EXTERNAL_URL",
+    "allowed_origins": ["__ALLOWED_ORIGINS__"]
   },
   "governance": {
     "auth_config": {
