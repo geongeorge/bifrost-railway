@@ -13,11 +13,15 @@
 #                            superuser and the `railway` database instead.
 #   3. railway-entrypoint.sh runs that bootstrap, sizes GOMEMLIMIT from the cgroup, then
 #                            execs the image's own entrypoint unchanged.
-FROM maximhq/bifrost:latest
+#
+# The upstream version is pinned so a redeploy never picks up a release by surprise.
+# Bump it deliberately after reading that release's notes for database migrations.
+FROM maximhq/bifrost:v2.3.2
 
 USER root
 
-RUN apk add --no-cache postgresql-client
+RUN apk upgrade --no-cache \
+ && apk add --no-cache postgresql-client
 
 COPY config.json /app/config.json
 COPY railway-entrypoint.sh /app/railway-entrypoint.sh
